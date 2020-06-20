@@ -10,10 +10,10 @@ import (
 )
 
 func main() {
-	log.SetPrefix("Stupid: ")
-	log.SetFlags(log.Ldate | log.Lmicroseconds | log.Llongfile)
+	logger := log.New(os.Stdout, "Stupid: ",
+		log.Ldate|log.Lmicroseconds|log.Llongfile)
 	if len(os.Args) != 3 {
-		log.Panicln("Usage: stupid config.json 500")
+		logger.Panicln("Usage: stupid config.json 500")
 		os.Exit(1)
 	}
 
@@ -41,13 +41,13 @@ func main() {
 		go assember.StartIntegrator(processed, envs, done)
 	}
 
-	proposor := infra.CreateProposers(config.NumOfConn, config.ClientPerConn, config.PeerAddrs, crypto)
+	proposor := infra.CreateProposers(config.NumOfConn, config.ClientPerConn, config.PeerAddrs, crypto, logger)
 	proposor.Start(signed, processed, done, config)
 
-	broadcaster := infra.CreateBroadcasters(config.NumOfConn, config.OrdererAddr, crypto)
+	broadcaster := infra.CreateBroadcasters(config.NumOfConn, config.OrdererAddr, crypto, logger)
 	broadcaster.Start(envs, done)
 
-	observer := infra.CreateObserver(config.PeerAddrs[0], config.Channel, crypto)
+	observer := infra.CreateObserver(config.PeerAddrs[0], config.Channel, crypto, logger)
 
 	start := time.Now()
 	go observer.Start(N, start)
@@ -67,6 +67,6 @@ func main() {
 	duration := time.Since(start)
 	close(done)
 
-	log.Printf("tx: %d, duration: %+v, tps: %f\n", N, duration, float64(N)/duration.Seconds())
+	logger.Printf("tx: %d, duration: %+v, tps: %f\n", N, duration, float64(N)/duration.Seconds())
 	os.Exit(0)
 }
