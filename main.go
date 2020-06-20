@@ -13,7 +13,7 @@ func main() {
 	log.SetPrefix("Stupid: ")
 	log.SetFlags(log.Ldate | log.Lmicroseconds | log.Llongfile)
 	if len(os.Args) != 3 {
-		log.Panicln("Usage: stupid config.json 500\n")
+		log.Panicln("Usage: stupid config.json 500")
 		os.Exit(1)
 	}
 
