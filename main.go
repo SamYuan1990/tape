@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -10,8 +10,10 @@ import (
 )
 
 func main() {
+	log.SetPrefix("Stupid: ")
+	log.SetFlags(log.Ldate | log.Lmicroseconds | log.Llongfile)
 	if len(os.Args) != 3 {
-		fmt.Printf("Usage: stupid config.json 500\n")
+		log.Panicln("Usage: stupid config.json 500\n")
 		os.Exit(1)
 	}
 
@@ -65,6 +67,6 @@ func main() {
 	duration := time.Since(start)
 	close(done)
 
-	fmt.Printf("tx: %d, duration: %+v, tps: %f\n", N, duration, float64(N)/duration.Seconds())
+	log.Printf("tx: %d, duration: %+v, tps: %f\n", N, duration, float64(N)/duration.Seconds())
 	os.Exit(0)
 }

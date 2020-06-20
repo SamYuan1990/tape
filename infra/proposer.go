@@ -2,8 +2,8 @@ package infra
 
 import (
 	"context"
-	"fmt"
 	"io"
+	"log"
 
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"
@@ -31,7 +31,7 @@ func CreateProposers(conn, client int, addrs []string, crypto *Crypto) *Proposer
 }
 
 func (ps *Proposers) Start(signed []chan *Elements, processed chan *Elements, done <-chan struct{}, config Config) {
-	fmt.Printf("Start sending transactions...\n\n")
+	log.Printf("Start sending transactions...\n\n")
 	for i := 0; i < len(config.PeerAddrs); i++ {
 		for j := 0; j < config.NumOfConn; j++ {
 			go ps.workers[i][j].Start(signed[i], processed, done, len(config.PeerAddrs))
@@ -61,10 +61,10 @@ func (p *Proposer) Start(signed, processed chan *Elements, done <-chan struct{},
 			r, err := p.e.ProcessProposal(context.Background(), s.SignedProp)
 			if err != nil || r.Response.Status < 200 || r.Response.Status >= 400 {
 				if r == nil {
-					fmt.Printf("Err processing proposal: %s, status: unknown, addr: %s \n", err, p.Addr)
+					log.Printf("Err processing proposal: %s, status: unknown, addr: %s \n", err, p.Addr)
 				} else {
-					fmt.Printf("Err processing proposal: %s, status: %d, addr: %s \n", err, r.Response.Status, p.Addr)
-					fmt.Println(r)
+					log.Printf("Err processing proposal: %s, status: %d, addr: %s \n", err, r.Response.Status, p.Addr)
+					log.Println(r)
 				}
 				continue
 			}
@@ -118,7 +118,7 @@ func (b *Broadcaster) Start(envs <-chan *Elements, done <-chan struct{}) {
 		case e := <-envs:
 			err := b.c.Send(e.Envelope)
 			if err != nil {
-				fmt.Printf("Failed to broadcast env: %s\n", err)
+				log.Printf("Failed to broadcast env: %s\n", err)
 			}
 
 		case <-done:
@@ -135,12 +135,12 @@ func (b *Broadcaster) StartDraining() {
 				return
 			}
 
-			fmt.Printf("Recv broadcast err: %s, status: %+v\n", err, res)
+			log.Printf("Recv broadcast err: %s, status: %+v\n", err, res)
 			panic("bcast recv err")
 		}
 
 		if res.Status != common.Status_SUCCESS {
-			fmt.Printf("Recv errouneous status: %s\n", res.Status)
+			log.Printf("Recv errouneous status: %s\n", res.Status)
 			panic("bcast recv err")
 		}
 
