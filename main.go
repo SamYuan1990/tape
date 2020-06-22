@@ -13,6 +13,7 @@ import (
 const loglevel = "stupid_loglevel"
 
 func main() {
+	fmt.Println(os.Getenv(loglevel))
 	if lvl, err := log.ParseLevel(os.Getenv(loglevel)); err != nil {
 		log.SetLevel(log.WarnLevel)
 	} else {

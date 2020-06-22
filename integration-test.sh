@@ -8,5 +8,5 @@ cd ./fabric-samples/first-network
 echo y | ./byfn.sh up
 cp -r crypto-config "$DIR" && cd "$DIR"
 go build
-export stupid_loglevel=debug
+export stupid_loglevel=trace
 ./stupid config.json 100
