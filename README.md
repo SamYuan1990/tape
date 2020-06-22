@@ -97,7 +97,7 @@ Execute `./stupid config.json 40000` to generate 40000 transactions to Fabric.
 
 ### log
 
-We use logrus(https://github.com/sirupsen/logrus) for logging, pls set log level by envrionment as `export stupid_loglevel="warn"`.
+We use logrus(https://github.com/sirupsen/logrus) for logging, pls set log level by envrionment as `export stupid_loglevel=\"warn\"`.
 Here are the values, by default is warn level.
 `"panic", "fatal", "error", "warn", "warning", "info", "debug", "trace"`
 
