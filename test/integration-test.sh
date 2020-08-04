@@ -60,7 +60,7 @@ esac
 cd "$DIR"
 
 if [ $3 == "Longrun" ]; then
-   SAMPLE=1000
+   SAMPLE=10000
 fi
 
 STUPID_LOGLEVEL=debug ./stupid $CONFIG_FILE $SAMPLE
