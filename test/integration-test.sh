@@ -5,6 +5,8 @@ DIR=$PWD
 go build ./cmd/stupid
 curl -vsS https://raw.githubusercontent.com/hyperledger/fabric/master/scripts/bootstrap.sh | bash
 
+SAMPLE=100
+
 cd ./fabric-samples/
 case $1 in
  mock)
@@ -19,7 +21,7 @@ case $1 in
     CONFIG_FILE=./test/configmock.yaml
     go build ./mock/fabric 
     nohup ./fabric 2>&1 &
-    ;;
+    ;;  
  14)
     git checkout release-1.4
     cd first-network
@@ -56,4 +58,9 @@ case $1 in
 esac
 
 cd "$DIR"
-STUPID_LOGLEVEL=debug ./stupid $CONFIG_FILE 100
+
+if [ $3 == "Longrun" ]; then
+   SAMPLE=1000
+fi
+
+STUPID_LOGLEVEL=debug ./stupid $CONFIG_FILE $SAMPLE

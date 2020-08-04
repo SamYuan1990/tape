@@ -53,6 +53,10 @@ jobs:
         FABRIC_20_ORLogic:
           FABRIC_VERSION: '22'
           INTERGATION_CASE: 'ORLogic'
+        FABRIC_20_ORLogic:
+          FABRIC_VERSION: '22'
+          INTERGATION_CASE: 'ORLogic'
+          LONG_RUN: 'Longrun'
         FABRIC_14:
           FABRIC_VERSION: '14'
           INTERGATION_CASE: 'ANDLogic'
@@ -61,4 +65,4 @@ jobs:
         LATEST:
           FABRIC_VERSION: ''
     steps:
-      - script: ./test/integration-test.sh $(FABRIC_VERSION) $(INTERGATION_CASE)
+      - script: ./test/integration-test.sh $(FABRIC_VERSION) $(INTERGATION_CASE) $(LONG_RUN)
