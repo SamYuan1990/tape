@@ -53,7 +53,7 @@ jobs:
         FABRIC_20_ORLogic:
           FABRIC_VERSION: '22'
           INTERGATION_CASE: 'ORLogic'
-        FABRIC_20_ORLogic:
+        FABRIC_20_LONGRUN:
           FABRIC_VERSION: '22'
           INTERGATION_CASE: 'ORLogic'
           LONG_RUN: 'Longrun'
