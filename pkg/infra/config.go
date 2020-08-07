@@ -24,8 +24,13 @@ type Config struct {
 }
 
 type Node struct {
-	Addr      string `yaml:"addr"`
-	TLSCACert string `yaml:"tls_ca_cert"`
+	Addr          string `yaml:"addr"`
+	TLSCACert     string `yaml:"tls_ca_cert"`
+	TLSCAKey      string `yaml:"tls_ca_key"`
+	TLSCAROOT     string `yaml:"tls_ca_root"`
+	TLSCACertByte []byte
+	TLSCAKeyByte  []byte
+	TLSCAROOTByte []byte
 }
 
 func LoadConfig(f string) Config {
@@ -38,6 +43,12 @@ func LoadConfig(f string) Config {
 	if err = yaml.Unmarshal(raw, &config); err != nil {
 		panic(err)
 	}
+
+	for i, _ := range config.Endorsers {
+		config.Endorsers[i].loadNodeConfig()
+	}
+	config.Committer.loadNodeConfig()
+	config.Orderer.loadNodeConfig()
 
 	return config
 }
@@ -92,4 +103,22 @@ func GetTLSCACerts(file string) ([]byte, error) {
 		return nil, err
 	}
 	return in, nil
+}
+
+func (n *Node) loadNodeConfig() {
+	TLSCACert, err := GetTLSCACerts(n.TLSCACert)
+	if err != nil {
+		panic(err)
+	}
+	certPEM, err := GetTLSCACerts(n.TLSCAKey)
+	if err != nil {
+		panic(err)
+	}
+	tlsCaRoot, err := GetTLSCACerts(n.TLSCAROOT)
+	if err != nil {
+		panic(err)
+	}
+	n.TLSCACertByte = TLSCACert
+	n.TLSCAKeyByte = certPEM
+	n.TLSCAROOTByte = tlsCaRoot
 }

@@ -63,11 +63,44 @@ num_of_conn: 10
 client_per_conn: 10
 ```
 
-`endorsers`: include the addr and tls ca cert of peers. Peer address is in IP:Port format. You may need to add peer name, i.e. `peer0.org1.example.com,peer0.org2.example.com` to your `/etc/hosts`
+For `endorsers`, `committer`, `orderer` we use a node structure defined as below:
+You may need to add peer name, i.e. `peer0.org1.example.com,peer0.org2.example.com` to your `/etc/hosts`
+
+```
+node: &node
+  addr:         peer0.org1.example.com:7051
+  tls_ca_cert:  TLS server cert or mTLS client cert
+  tls_ca_key:   mTLS client key
+  tls_ca_root:  mTLS ca root
+```
+
+For non TLS
+```
+node: &node
+  addr:         peer0.org1.example.com:7051
+```
+
+For TLS
+```
+node: &node
+  addr:         peer0.org1.example.com:7051
+  tls_ca_cert:  peer0.org1.example.com-cert.pem
+```
+
+For MTLS
+```
+node: &node
+  addr:         peer0.org1.example.com:7051
+  tls_ca_cert:  User1@org1.example.com/tls/client.crt
+  tls_ca_key:   User1@org1.example.com/tls/client.key
+  tls_ca_root:  User1@org1.example.com/tls/ca.crt
+```
+
+`endorsers`: the peer which will execute endorserment. 
 
 `committer`: observe tx commitment from these peers.
 
-`orderer`: include the addr and tls ca cert of orderer. Orderer address is in IP:Port format. It does not support sending traffic to multiple orderers, yet. You may need to add orderer name, i.e. `orderer.example.com` to your `/etc/hosts`
+`orderer`: include the addr and tls ca cert of orderer.
 
 This tool sends traffic as a Fabric user, and requires following configs
 

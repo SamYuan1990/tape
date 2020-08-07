@@ -10,10 +10,10 @@ import (
 	"github.com/hyperledger/fabric/core/comm"
 )
 
-func CreateGRPCClient(cert []byte) (*comm.GRPCClient, error) {
+func CreateGRPCClient(node Node) (*comm.GRPCClient, error) {
 	var certs [][]byte
-	if cert != nil {
-		certs = append(certs, cert)
+	if node.TLSCACertByte != nil {
+		certs = append(certs, node.TLSCACertByte)
 	}
 	config := comm.ClientConfig{}
 	config.Timeout = 5 * time.Second
@@ -25,6 +25,17 @@ func CreateGRPCClient(cert []byte) (*comm.GRPCClient, error) {
 
 	if len(certs) > 0 {
 		config.SecOpts.UseTLS = true
+		if len(node.TLSCAKey) > 0 && len(node.TLSCAROOT) > 0 {
+			config.SecOpts.RequireClientCert = true
+			config.SecOpts.Certificate = node.TLSCACertByte
+			config.SecOpts.Key = node.TLSCAKeyByte
+			var carootcerts [][]byte
+
+			if node.TLSCAROOTByte != nil {
+				carootcerts = append(carootcerts, node.TLSCAROOTByte)
+			}
+			config.SecOpts.ClientRootCAs = carootcerts
+		}
 	}
 
 	grpcClient, err := comm.NewGRPCClient(config)
@@ -35,13 +46,13 @@ func CreateGRPCClient(cert []byte) (*comm.GRPCClient, error) {
 	return grpcClient, nil
 }
 
-func CreateEndorserClient(addr string, tlscacert []byte) (peer.EndorserClient, error) {
-	gRPCClient, err := CreateGRPCClient(tlscacert)
+func CreateEndorserClient(node Node) (peer.EndorserClient, error) {
+	gRPCClient, err := CreateGRPCClient(node)
 	if err != nil {
 		return nil, err
 	}
 
-	conn, err := gRPCClient.NewConnection(addr, func(tlsConfig *tls.Config) { tlsConfig.InsecureSkipVerify = true })
+	conn, err := gRPCClient.NewConnection(node.Addr, func(tlsConfig *tls.Config) { tlsConfig.InsecureSkipVerify = true })
 	if err != nil {
 		return nil, err
 	}
@@ -49,13 +60,13 @@ func CreateEndorserClient(addr string, tlscacert []byte) (peer.EndorserClient, e
 	return peer.NewEndorserClient(conn), nil
 }
 
-func CreateBroadcastClient(addr string, tlscacert []byte) (orderer.AtomicBroadcast_BroadcastClient, error) {
-	gRPCClient, err := CreateGRPCClient(tlscacert)
+func CreateBroadcastClient(node Node) (orderer.AtomicBroadcast_BroadcastClient, error) {
+	gRPCClient, err := CreateGRPCClient(node)
 	if err != nil {
 		return nil, err
 	}
 
-	conn, err := gRPCClient.NewConnection(addr, func(tlsConfig *tls.Config) { tlsConfig.InsecureSkipVerify = true })
+	conn, err := gRPCClient.NewConnection(node.Addr, func(tlsConfig *tls.Config) { tlsConfig.InsecureSkipVerify = true })
 	if err != nil {
 		return nil, err
 	}
@@ -63,13 +74,13 @@ func CreateBroadcastClient(addr string, tlscacert []byte) (orderer.AtomicBroadca
 	return orderer.NewAtomicBroadcastClient(conn).Broadcast(context.Background())
 }
 
-func CreateDeliverFilteredClient(addr string, tlscacert []byte) (peer.Deliver_DeliverFilteredClient, error) {
-	gRPCClient, err := CreateGRPCClient(tlscacert)
+func CreateDeliverFilteredClient(node Node) (peer.Deliver_DeliverFilteredClient, error) {
+	gRPCClient, err := CreateGRPCClient(node)
 	if err != nil {
 		return nil, err
 	}
 
-	conn, err := gRPCClient.NewConnection(addr, func(tlsConfig *tls.Config) { tlsConfig.InsecureSkipVerify = true })
+	conn, err := gRPCClient.NewConnection(node.Addr, func(tlsConfig *tls.Config) { tlsConfig.InsecureSkipVerify = true })
 	if err != nil {
 		return nil, err
 	}

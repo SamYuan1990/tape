@@ -2,14 +2,20 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
+	"os"
+	"strconv"
 
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 type Peer struct {
@@ -86,6 +92,15 @@ func main() {
 		panic(err)
 	}
 
+	mtls := false
+
+	if len(os.Args) > 1 {
+		mtls, err = strconv.ParseBool(os.Args[1])
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	fmt.Println("Start listening on localhost...")
 
 	blockC := make(chan struct{}, 1000)
@@ -98,8 +113,30 @@ func main() {
 	o := &Orderer{
 		TxC: blockC,
 	}
-
 	grpcServer := grpc.NewServer()
+
+	if mtls {
+		fmt.Println("Enable mtls")
+		peerCert, err := tls.LoadX509KeyPair("organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt",
+			"organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key")
+		if err != nil {
+			fmt.Println("load peer cert/key error:", err)
+			return
+		}
+		caCert, err := ioutil.ReadFile("organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt")
+		if err != nil {
+			fmt.Println("read ca cert file error:", err)
+			return
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		ta := credentials.NewTLS(&tls.Config{
+			Certificates: []tls.Certificate{peerCert},
+			ClientCAs:    caCertPool,
+			ClientAuth:   tls.RequireAndVerifyClientCert,
+		})
+		grpcServer = grpc.NewServer(grpc.Creds(ta))
+	}
 	peer.RegisterEndorserServer(grpcServer, p)
 	peer.RegisterDeliverServer(grpcServer, p)
 	orderer.RegisterAtomicBroadcastServer(grpcServer, o)
